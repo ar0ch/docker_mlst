@@ -3,26 +3,15 @@ MAINTAINER ap13@sanger.ac.uk
 
 RUN apt-get update -qq && apt-get install -y git wget samtools bedtools bwa gcc autoconf make python-pip unzip 
 
+RUN pip install stringMLST 
+
 RUN pip install pyfaidx 
 
-RUN git clone https://github.com/anujg1991/stringMLST.git
-
-RUN cd /stringMLST/datasets        && \
-    unzip Salmonella_enterica.zip  && \
-    unzip Campylobacter_jejuni.zip && \
-    unzip Escherichia_coli_1.zip   && \
-    unzip Listeria_monocytogenes.zip
-
-# Ecoli has dash instead of underscore which causes it to crash
-RUN sed -i 's/-/_/' /stringMLST/datasets/Escherichia_coli_1/*.tfa
-
-ENV PATH /stringMLST:$PATH
-
 RUN cd /stringMLST && \
-    stringMLST.py --buildDB -c /stringMLST/datasets/Salmonella_enterica/config.txt -k 35 -P SE  && \
-    stringMLST.py --buildDB -c /stringMLST/datasets/Campylobacter_jejuni/config.txt -k 35 -P CJ && \
-    stringMLST.py --buildDB -c /stringMLST/datasets/Listeria_monocytogenes/config.txt -k 35 -P LM && \
-    stringMLST.py --buildDB -c /stringMLST/datasets/Escherichia_coli_1/config.txt -k 35 -P EC 
+    stringMLST.py --getMLST --species salmonella-enterica -P /stringMLST/datasets/Salmonella_enterica/SE -k 35 && \
+    stringMLST.py --getMLST --species campylobacter-jejuni -P /stringMLST/datasets/Campylobacter_jejuni/CJ -k 35 && \
+    stringMLST.py --getMLST --species listeria -P /stringMLST/datasets/Listeria_monocytogenes/LM -k 35 && \
+    stringMLST.py --getMLST --species ecoli1 -P /stringMLST/datasets/Escherichia_coli_1/EC -k 35 
 
 WORKDIR /data
 
